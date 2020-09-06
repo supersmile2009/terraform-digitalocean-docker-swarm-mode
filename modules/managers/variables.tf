@@ -1,25 +1,10 @@
-variable "connection_timeout" {
-  description = "Timeout for connection to servers"
-  default     = "2m"
-}
-
 variable "domain" {
   description = "Domain name used in droplet hostnames, e.g example.com"
 }
 
 variable "ssh_keys" {
-  type        = "list"
+  type        = list(number)
   description = "A list of SSH IDs or fingerprints to enable in the format [12345, 123456] that are added to manager nodes"
-}
-
-variable "provision_ssh_key" {
-  default     = "~/.ssh/id_rsa"
-  description = "File path to SSH private key used to access the provisioned nodes. Ensure this key is listed in the manager and work ssh keys list"
-}
-
-variable "provision_user" {
-  default     = "root"
-  description = "User used to log in to the droplets via ssh for issueing Docker commands"
 }
 
 variable "region" {
@@ -34,7 +19,7 @@ variable "total_instances" {
 
 variable "image" {
   description = "Droplet image used for the manager nodes"
-  default     = "docker-18-04"
+  default     = "ubuntu-20-04-x64"
 }
 
 variable "size" {
@@ -47,43 +32,28 @@ variable "name" {
   default     = "manager"
 }
 
-variable "backups" {
-  description = "Enable DigitalOcean droplet backups"
-  default     = false
-}
-
-variable "user_data" {
-  description = "User data content for manager nodes"
-
-  default = <<EOF
-  #!/bin/sh
-EOF
-}
-
-variable "docker_cmd" {
-  description = "Docker command"
-  default     = "sudo docker"
-}
-
 variable "tags" {
   description = "List of DigitalOcean tag ids"
   default     = []
-  type        = "list"
-}
-
-variable "availability" {
-  description = "Availability of the node ('active'|'pause'|'drain')"
-  default     = "active"
+  type        = list(string)
 }
 
 variable "remote_api_ca" {
-  default = ""
-}
-
-variable "remote_api_key" {
-  default = ""
+  description = "CA file path for the docker remote API"
 }
 
 variable "remote_api_certificate" {
-  default = ""
+  description = "Certificate file path for the docker remote API"
+}
+
+variable "remote_api_key" {
+  description = "Private key file path for the docker remote API"
+}
+
+variable "user" {
+  description = "Username to ssh into the server"
+}
+
+variable "extra_cloudinit_config" {
+  description = "Cloud-init config to run on server setup"
 }

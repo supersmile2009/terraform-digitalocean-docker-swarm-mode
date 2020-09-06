@@ -1,35 +1,20 @@
-variable "connection_timeout" {
-  description = "Timeout for connection to servers"
-  default     = "2m"
-}
-
 variable "domain" {
   description = "Domain name used in droplet hostnames, e.g example.com"
 }
 
-variable "manager_ssh_keys" {
-  type        = "list"
-  description = "A list of SSH IDs or fingerprints to enable in the format [12345, 123456] that are added to manager nodes"
-}
-
-variable "worker_ssh_keys" {
-  type        = "list"
-  description = "A list of SSH IDs or fingerprints to enable in the format [12345, 123456] that are added to worker nodes"
-}
-
-variable "provision_ssh_key" {
-  default     = "~/.ssh/id_rsa"
-  description = "File path to SSH private key used to access the provisioned nodes. Ensure this key is listed in the manager and work ssh keys list"
+variable "ssh_keys" {
+  type        = list(number)
+  description = "A list of SSH IDs or fingerprints to enable in the format [12345, 123456] that are added to the provisioned nodes"
 }
 
 variable "provision_user" {
   default     = "root"
-  description = "User used to log in to the droplets via ssh for issueing Docker commands"
+  description = "User used to log in to the droplets via ssh for running provisioning commands"
 }
 
 variable "region" {
   description = "Datacenter region in which the cluster will be created"
-  default     = "ams3"
+  default     = "nyc3"
 }
 
 variable "total_managers" {
@@ -44,12 +29,12 @@ variable "total_workers" {
 
 variable "manager_image" {
   description = "Image for the manager nodes"
-  default     = "docker-18-04"
+  default     = "coreos-alpha"
 }
 
 variable "worker_image" {
   description = "Droplet image for the worker nodes"
-  default     = "docker-18-04"
+  default     = "coreos-alpha"
 }
 
 variable "manager_size" {
@@ -72,45 +57,31 @@ variable "worker_name" {
   default     = "worker"
 }
 
-variable "manager_user_data" {
-  description = "User data content for manager nodes. Use this for installing a configuration management tool, such as Puppet or installing Docker"
-
-  default = <<EOF
-  #!/bin/sh
-EOF
-}
-
-variable "worker_user_data" {
-  description = "User data content for worker nodes. Use this for installing a configuration management tool, such as Puppet or installing Docker"
-
-  default = <<EOF
-  #!/bin/sh
-EOF
-}
-
 variable "manager_tags" {
   description = "List of DigitalOcean tag ids"
   default     = []
-  type        = "list"
+  type        = list(string)
 }
 
 variable "worker_tags" {
   description = "List of DigitalOcean tag ids"
   default     = []
-  type        = "list"
+  type        = list(string)
 }
 
 variable "remote_api_ca" {
-  description = "CA file path for the docker remote API"
-  default     = ""
-}
-
-variable "remote_api_key" {
-  description = "Private key file path for the docker remote API"
-  default     = ""
+  description = "CA file contents for the docker remote API"
 }
 
 variable "remote_api_certificate" {
-  description = "Certificate file path for the docker remote API"
-  default     = ""
+  description = "Certificate file contents for the docker remote API"
+}
+
+variable "remote_api_key" {
+  description = "Private key file contents for the docker remote API"
+}
+
+variable "cloud_init_config" {
+  description = "Cloud init config to run on server setup"
+  type = string
 }

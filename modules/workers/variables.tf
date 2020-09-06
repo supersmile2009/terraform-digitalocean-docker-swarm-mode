@@ -1,8 +1,3 @@
-variable "connection_timeout" {
-  description = "Timeout for connection to servers"
-  default     = "2m"
-}
-
 variable "domain" {
   description = "Domain name used in droplet hostnames, e.g example.com"
 }
@@ -12,22 +7,12 @@ variable "join_token" {
 }
 
 variable "manager_private_ip" {
-  description = "Private ip adress of a manager node, used to have a node join the existing cluster"
+  description = "Ip adress of a manager node, used to have a node join the existing cluster"
 }
 
 variable "ssh_keys" {
-  type        = "list"
+  type        = list(number)
   description = "A list of SSH IDs or fingerprints to enable in the format [12345, 123456] that are added to worker nodes"
-}
-
-variable "provision_ssh_key" {
-  default     = "~/.ssh/id_rsa"
-  description = "File path to SSH private key used to access the provisioned nodes. Ensure this key is listed in the manager and work ssh keys list"
-}
-
-variable "provision_user" {
-  default     = "root"
-  description = "User used to log in to the droplets via ssh for issueing Docker commands"
 }
 
 variable "region" {
@@ -36,50 +21,35 @@ variable "region" {
 }
 
 variable "total_instances" {
-  description = "Total number of instances of this type in cluster"
+  description = "Total number of workers in a cluster"
   default     = 1
 }
 
 variable "image" {
-  description = "Operating system for the worker nodes"
-  default     = "docker-18-04"
+  description = "Droplet image used for the manager nodes"
+  default     = "ubuntu-20-04-x64"
 }
 
 variable "size" {
-  description = "Droplet size of worker nodes"
+  description = "Droplet size of manager nodes"
   default     = "s-1vcpu-1gb"
 }
 
-variable "backups" {
-  default     = false
-  description = "Enable backups of the worker nodes"
-}
-
 variable "name" {
-  description = "Prefix for name of worker nodes"
-  default     = "worker"
-}
-
-variable "user_data" {
-  description = "User data content for worker nodes. Use this for installing a configuration management tool, such as Puppet or installing Docker"
-
-  default = <<EOF
-  #!/bin/sh
-EOF
-}
-
-variable "docker_cmd" {
-  description = "Docker command"
-  default     = "sudo docker"
+  description = "Prefix for name of manager nodes"
+  default     = "manager"
 }
 
 variable "tags" {
   description = "List of DigitalOcean tag ids"
   default     = []
-  type        = "list"
+  type        = list(string)
 }
 
-variable "availability" {
-  description = "Availability of the node ('active'|'pause'|'drain')"
-  default     = "active"
+variable "user" {
+  description = "Username to ssh into the server"
+}
+
+variable "extra_cloudinit_config" {
+  description = "Cloud-init config to run on server setup"
 }

@@ -1,52 +1,56 @@
-data "template_file" "join_cluster_as_worker" {
-  template = "${file("${path.module}/scripts/join.sh")}"
+data "cloudinit_config" "config" {
+  gzip = false
+  base64_encode = false
 
-  vars {
-    docker_cmd         = "${var.docker_cmd}"
-    availability       = "${var.availability}"
-    manager_private_ip = "${var.manager_private_ip}"
+  dynamic "part" {
+    for_each = var.extra_cloudinit_config != "" ? [true] : []
+    content {
+      content_type = "text/cloud-config"
+      content = var.extra_cloudinit_config
+    }
+  }
+  part {
+    content_type = "text/cloud-config"
+    content = file("${path.module}/scripts/cloud-config.yaml")
   }
 }
 
-resource "digitalocean_droplet" "node" {
-  ssh_keys           = ["${var.ssh_keys}"]
-  image              = "${var.image}"
-  region             = "${var.region}"
-  size               = "${var.size}"
+resource "digitalocean_droplet" "worker" {
+  count = var.total_instances
+  image = var.image
+  name = format(
+    "%s-%02d.%s.%s",
+    var.name,
+    count.index + 1,
+    var.region,
+    var.domain,
+  )
+  size               = var.size
   private_networking = true
-  backups            = "${var.backups}"
-  ipv6               = false
-  user_data          = "${var.user_data}"
-  tags               = ["${var.tags}"]
-  count              = "${var.total_instances}"
-  name               = "${format("%s-%02d.%s.%s", var.name, count.index + 1, var.region, var.domain)}"
+  region             = var.region
+  ssh_keys           = var.ssh_keys
+  user_data          = data.cloudinit_config.config.rendered
+  tags               = var.tags
 
   connection {
-    type        = "ssh"
-    user        = "${var.provision_user}"
-    private_key = "${file("${var.provision_ssh_key}")}"
-    timeout     = "${var.connection_timeout}"
-  }
-
-  provisioner "file" {
-    content     = "${data.template_file.join_cluster_as_worker.rendered}"
-    destination = "/tmp/join_cluster_as_worker.sh"
+    type    = "ssh"
+    user    = "dev"
+    host    = self.ipv4_address
   }
 
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /tmp/join_cluster_as_worker.sh",
-      "/tmp/join_cluster_as_worker.sh ${var.join_token}",
+      "docker swarm join --token ${var.join_token} ${var.manager_private_ip}",
     ]
   }
 
   provisioner "remote-exec" {
-    when = "destroy"
+    when = destroy
 
     inline = [
-      "docker swarm leave",
+      "timeout 25 docker swarm leave --force",
     ]
 
-    on_failure = "continue"
+    on_failure = continue
   }
 }
